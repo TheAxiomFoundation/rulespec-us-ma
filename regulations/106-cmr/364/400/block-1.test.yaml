@@ -1,0 +1,71 @@
+- name: medical_expense_at_or_under_minimum_threshold_yields_zero
+  period: 2024-01
+  input:
+    us-ma:regulations/106-cmr/364/400/block-1#input.verified_medical_expense: 30
+  output:
+    us-ma:regulations/106-cmr/364/400/block-1#medical_expense_deduction: 0
+- name: medical_expense_in_standard_band_yields_standard_deduction
+  period: 2024-01
+  input:
+    us-ma:regulations/106-cmr/364/400/block-1#input.verified_medical_expense: 100
+  output:
+    us-ma:regulations/106-cmr/364/400/block-1#medical_expense_deduction: 155
+- name: medical_expense_over_upper_threshold_yields_actual_over_minimum
+  period: 2024-01
+  input:
+    us-ma:regulations/106-cmr/364/400/block-1#input.verified_medical_expense: 250
+  output:
+    us-ma:regulations/106-cmr/364/400/block-1#medical_expense_deduction: 215
+- name: earned_income_overissuance_both_gates_true_disallows_deduction
+  period: 2024-01
+  input:
+    us-ma:regulations/106-cmr/364/400/block-1#input.household_failed_to_timely_report_earned_income: true
+    us-ma:regulations/106-cmr/364/400/block-1#input.failure_to_report_earned_income_is_basis_for_overissuance_claim: true
+  output:
+    us-ma:regulations/106-cmr/364/400/block-1#earned_income_deduction_disallowed_for_overissuance: holds
+- name: earned_income_overissuance_timely_report_allows_deduction
+  period: 2024-01
+  input:
+    us-ma:regulations/106-cmr/364/400/block-1#input.household_failed_to_timely_report_earned_income: false
+    us-ma:regulations/106-cmr/364/400/block-1#input.failure_to_report_earned_income_is_basis_for_overissuance_claim: true
+  output:
+    us-ma:regulations/106-cmr/364/400/block-1#earned_income_deduction_disallowed_for_overissuance: not_holds
+- name: earned_income_overissuance_unrelated_basis_allows_deduction
+  period: 2024-01
+  input:
+    us-ma:regulations/106-cmr/364/400/block-1#input.household_failed_to_timely_report_earned_income: true
+    us-ma:regulations/106-cmr/364/400/block-1#input.failure_to_report_earned_income_is_basis_for_overissuance_claim: false
+  output:
+    us-ma:regulations/106-cmr/364/400/block-1#earned_income_deduction_disallowed_for_overissuance: not_holds
+- name: vacated_home_all_conditions_met_includes_shelter_deduction
+  period: 2024-01
+  input:
+    us-ma:regulations/106-cmr/364/400/block-1#input.household_intends_to_return_to_vacated_home: true
+    us-ma:regulations/106-cmr/364/400/block-1#input.current_occupants_of_vacated_home_are_claiming_snap_shelter_deduction: false
+    us-ma:regulations/106-cmr/364/400/block-1#input.vacated_home_is_leased_or_rented_during_absence: false
+  output:
+    us-ma:regulations/106-cmr/364/400/block-1#vacated_home_shelter_deduction_applies: holds
+- name: vacated_home_no_intent_to_return_excludes_shelter_deduction
+  period: 2024-01
+  input:
+    us-ma:regulations/106-cmr/364/400/block-1#input.household_intends_to_return_to_vacated_home: false
+    us-ma:regulations/106-cmr/364/400/block-1#input.current_occupants_of_vacated_home_are_claiming_snap_shelter_deduction: false
+    us-ma:regulations/106-cmr/364/400/block-1#input.vacated_home_is_leased_or_rented_during_absence: false
+  output:
+    us-ma:regulations/106-cmr/364/400/block-1#vacated_home_shelter_deduction_applies: not_holds
+- name: vacated_home_current_occupants_claiming_excludes_shelter_deduction
+  period: 2024-01
+  input:
+    us-ma:regulations/106-cmr/364/400/block-1#input.household_intends_to_return_to_vacated_home: true
+    us-ma:regulations/106-cmr/364/400/block-1#input.current_occupants_of_vacated_home_are_claiming_snap_shelter_deduction: true
+    us-ma:regulations/106-cmr/364/400/block-1#input.vacated_home_is_leased_or_rented_during_absence: false
+  output:
+    us-ma:regulations/106-cmr/364/400/block-1#vacated_home_shelter_deduction_applies: not_holds
+- name: vacated_home_leased_during_absence_excludes_shelter_deduction
+  period: 2024-01
+  input:
+    us-ma:regulations/106-cmr/364/400/block-1#input.household_intends_to_return_to_vacated_home: true
+    us-ma:regulations/106-cmr/364/400/block-1#input.current_occupants_of_vacated_home_are_claiming_snap_shelter_deduction: false
+    us-ma:regulations/106-cmr/364/400/block-1#input.vacated_home_is_leased_or_rented_during_absence: true
+  output:
+    us-ma:regulations/106-cmr/364/400/block-1#vacated_home_shelter_deduction_applies: not_holds

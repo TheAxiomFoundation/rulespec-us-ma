@@ -1,0 +1,138 @@
+format: rulespec/v1
+module:
+  proof_validation:
+    required: true
+  source_verification:
+    corpus_citation_path: us-ma/regulation/106-cmr/364/400/block-1
+  summary: |-
+    There are seven deductions from income; no other deductions are allowed.
+    The earned income deduction shall not be allowed in determining an
+    overissuance if the household fails to report earned income in a timely
+    manner and the failure to report the income is the basis for the claim.
+    Medical Expense table: $35/month or under -> $0; Over $35.00 to $190/month
+    -> $155; Over $190/month -> Actual amount over $35. Legally obligated
+    child support payments paid by a household member to a third party on
+    behalf of a non-household member are included in the child support
+    deduction; payments for children's health insurance are included; arrears
+    payments are deductible; alimony payments to or for a non-household member
+    are not included. Shelter expenses for a vacated home shall be included in
+    the shelter deduction if the household intends to return, current
+    occupants (if any) are not claiming a shelter deduction for SNAP, and the
+    home is not leased or rented during the absence. Only one SUA applies.
+    Public housing with central meters that charges the household for excess
+    heating or cooling may use this allowance; a household that incurs
+    electricity costs to power an electric blower for an oil or gas furnace
+    may not. LIHEAA recipients are deemed to incur out-of-pocket energy
+    expenses. Non-LIHEAA energy assistance with continued out-of-pocket
+    heating expenses remains eligible; non-LIHEAA payments are prorated over
+    the heating season the payments are intended to cover.
+rules:
+  - name: medical_expense_minimum_threshold
+    kind: parameter
+    dtype: Money
+    unit: USD
+    source: 106 CMR 364.400 medical expense deduction table
+    metadata:
+      proof:
+        atoms:
+          - path: versions[0].formula
+            kind: amount
+            source:
+              corpus_citation_path: us-ma/regulation/106-cmr/364/400/block-1
+              excerpt: "$35/month or under $0"
+    versions:
+      - effective_from: '0001-01-01'
+        formula: |-
+          35
+  - name: medical_expense_standard_deduction_upper_threshold
+    kind: parameter
+    dtype: Money
+    unit: USD
+    source: 106 CMR 364.400 medical expense deduction table
+    metadata:
+      proof:
+        atoms:
+          - path: versions[0].formula
+            kind: amount
+            source:
+              corpus_citation_path: us-ma/regulation/106-cmr/364/400/block-1
+              excerpt: "Over $35.00 to $190/month $155"
+    versions:
+      - effective_from: '0001-01-01'
+        formula: |-
+          190
+  - name: standard_medical_deduction_amount
+    kind: parameter
+    dtype: Money
+    unit: USD
+    source: 106 CMR 364.400 medical expense deduction table
+    metadata:
+      proof:
+        atoms:
+          - path: versions[0].formula
+            kind: amount
+            source:
+              corpus_citation_path: us-ma/regulation/106-cmr/364/400/block-1
+              excerpt: "Over $35.00 to $190/month $155"
+    versions:
+      - effective_from: '0001-01-01'
+        formula: |-
+          155
+  - name: medical_expense_deduction
+    kind: derived
+    entity: Household
+    dtype: Money
+    period: Month
+    unit: USD
+    source: 106 CMR 364.400 medical expense deduction table
+    metadata:
+      proof:
+        atoms:
+          - path: versions[0].formula
+            kind: formula
+            source:
+              corpus_citation_path: us-ma/regulation/106-cmr/364/400/block-1
+              excerpt: "Medical Expense Verified Amount of Deduction $35/month or under $0 Over $35.00 to $190/month $155 Medical Expense Verified Amount of Deduction Over $190/month Actual amount over $35"
+    versions:
+      - effective_from: '0001-01-01'
+        formula: |-
+          if verified_medical_expense <= medical_expense_minimum_threshold: 0 else: if verified_medical_expense <= medical_expense_standard_deduction_upper_threshold: standard_medical_deduction_amount else: verified_medical_expense - medical_expense_minimum_threshold
+  - name: earned_income_deduction_disallowed_for_overissuance
+    kind: derived
+    entity: Household
+    dtype: Judgment
+    period: Month
+    source: 106 CMR 364.400 earned income deduction overissuance exclusion
+    metadata:
+      proof:
+        atoms:
+          - path: versions[0].formula
+            kind: condition
+            source:
+              corpus_citation_path: us-ma/regulation/106-cmr/364/400/block-1
+              excerpt: "This deduction shall not be allowed in determining an overissuance if the household fails to report earned income in a timely manner and the failure to report the income is the basis for the claim."
+    versions:
+      - effective_from: '0001-01-01'
+        formula: |-
+          household_failed_to_timely_report_earned_income
+          and failure_to_report_earned_income_is_basis_for_overissuance_claim
+  - name: vacated_home_shelter_deduction_applies
+    kind: derived
+    entity: Household
+    dtype: Judgment
+    period: Month
+    source: 106 CMR 364.400 vacated home shelter deduction
+    metadata:
+      proof:
+        atoms:
+          - path: versions[0].formula
+            kind: condition
+            source:
+              corpus_citation_path: us-ma/regulation/106-cmr/364/400/block-1
+              excerpt: "Shelter expenses for a vacated home shall be included in the shelter deduction if the household intends to return to the home, the current occupants of the home, if any, are not claiming a shelter deduction for SNAP purposes, and the home is not leased or rented during the absence of the household"
+    versions:
+      - effective_from: '0001-01-01'
+        formula: |-
+          household_intends_to_return_to_vacated_home
+          and not current_occupants_of_vacated_home_are_claiming_snap_shelter_deduction
+          and not vacated_home_is_leased_or_rented_during_absence
