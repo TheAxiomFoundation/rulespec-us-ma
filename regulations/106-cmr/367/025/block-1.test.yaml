@@ -1,0 +1,21 @@
+- name: dissatisfied_household_with_snap_impact_has_fair_hearing
+  period: 2026-01
+  input:
+    us-ma:regulations/106-cmr/367/025/block-1#input.household_is_dissatisfied_with_department_action_or_inaction: true
+    us-ma:regulations/106-cmr/367/025/block-1#input.department_action_or_inaction_affects_snap_participation: true
+  output:
+    us-ma:regulations/106-cmr/367/025/block-1#snap_fair_hearing_available: holds
+- name: not_dissatisfied_no_fair_hearing
+  period: 2026-01
+  input:
+    us-ma:regulations/106-cmr/367/025/block-1#input.household_is_dissatisfied_with_department_action_or_inaction: false
+    us-ma:regulations/106-cmr/367/025/block-1#input.department_action_or_inaction_affects_snap_participation: true
+  output:
+    us-ma:regulations/106-cmr/367/025/block-1#snap_fair_hearing_available: not_holds
+- name: dissatisfied_but_no_snap_impact_no_fair_hearing
+  period: 2026-01
+  input:
+    us-ma:regulations/106-cmr/367/025/block-1#input.household_is_dissatisfied_with_department_action_or_inaction: true
+    us-ma:regulations/106-cmr/367/025/block-1#input.department_action_or_inaction_affects_snap_participation: false
+  output:
+    us-ma:regulations/106-cmr/367/025/block-1#snap_fair_hearing_available: not_holds
